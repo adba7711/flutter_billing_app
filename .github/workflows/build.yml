@@ -1,38 +1,29 @@
-plugins {
-    id("com.android.application")
-    id("kotlin-android")
-    id("dev.flutter.flutter-gradle-plugin")
-}
+name: Build APK
 
-android {
-    namespace = "com.example.billing_app"
-    compileSdk = 34
-    ndkVersion = flutter.ndkVersion
+on:
+  workflow_dispatch:
 
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
-    }
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-    kotlinOptions {
-        jvmTarget = "17"
-    }
+    steps:
+      - uses: actions/checkout@v4
 
-    defaultConfig {
-        applicationId = "com.example.billing_app"
-        minSdk = 21
-        targetSdk = 34
-        versionCode = 1
-        versionName = "1.0.0"
-    }
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
 
-    buildTypes {
-        release {
-            signingConfig = signingConfigs.getByName("debug")
-        }
-    }
-}
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.22.3'
 
-flutter {
-    source = "../.."
-}
+      - run: flutter pub get
+
+      - run: flutter build apk --release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apk
+          path: build/app/outputs/flutter-apk/app-release.apk
